@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Калкулатор за средна цена на акция</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 24px;
+        background: #f5f7fb;
+        color: #222;
+      }
+
+      .card {
+        max-width: 620px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        margin-top: 0;
+        font-size: 1.4rem;
+      }
+
+      .hint {
+        margin-top: -6px;
+        color: #555;
+        font-size: 0.95rem;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid #c9d2e3;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      button {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      #addBtn {
+        background: #e7eefb;
+      }
+
+      #calcBtn {
+        background: #1f6feb;
+        color: #fff;
+      }
+
+      .result {
+        margin-top: 18px;
+        background: #f0f6ff;
+        border: 1px solid #c6dbff;
+        border-radius: 8px;
+        padding: 12px;
+        line-height: 1.6;
+      }
+
+      .error {
+        color: #b00020;
+        font-weight: 600;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Калкулатор: Средна цена на акция</h1>
+      <p class="hint">Въведи покупки и натисни „Изчисли средна цена“.</p>
+
+      <div id="rows"></div>
+
+      <div class="actions">
+        <button id="addBtn" type="button">Добави</button>
+        <button id="calcBtn" type="button">Изчисли средна цена</button>
+      </div>
+
+      <div id="error" class="error"></div>
+      <div id="result" class="result" hidden></div>
+    </div>
+
+    <script>
+      const rowsContainer = document.getElementById("rows");
+      const addBtn = document.getElementById("addBtn");
+      const calcBtn = document.getElementById("calcBtn");
+      const resultBox = document.getElementById("result");
+      const errorBox = document.getElementById("error");
+
+      function createRow() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "row";
+
+        wrapper.innerHTML = `
+          <div>
+            <label>Брой акции</label>
+            <input type="number" step="any" min="0" placeholder="Напр. 10" class="shares" />
+          </div>
+          <div>
+            <label>Цена</label>
+            <input type="number" step="any" min="0" placeholder="Напр. 100" class="price" />
+          </div>
+        `;
+
+        rowsContainer.appendChild(wrapper);
+      }
+
+      function parseNumber(value) {
+        return Number(String(value).replace(",", "."));
+      }
+
+      addBtn.addEventListener("click", createRow);
+
+      calcBtn.addEventListener("click", () => {
+        errorBox.textContent = "";
+        resultBox.hidden = true;
+
+        const sharesInputs = document.querySelectorAll(".shares");
+        const priceInputs = document.querySelectorAll(".price");
+
+        let totalShares = 0;
+        let totalCost = 0;
+
+        for (let i = 0; i < sharesInputs.length; i += 1) {
+          const shares = parseNumber(sharesInputs[i].value);
+          const price = parseNumber(priceInputs[i].value);
+
+          const rowIndex = i + 1;
+          if (!Number.isFinite(shares) || !Number.isFinite(price) || shares <= 0 || price < 0) {
+            errorBox.textContent = `Невалидни данни на ред ${rowIndex}. Въведи брой акции > 0 и цена >= 0.`;
+            return;
+          }
+
+          totalShares += shares;
+          totalCost += shares * price;
+        }
+
+        if (totalShares === 0) {
+          errorBox.textContent = "Добави поне една валидна покупка.";
+          return;
+        }
+
+        const averagePrice = totalCost / totalShares;
+
+        resultBox.innerHTML = `
+          <strong>Общо акции:</strong> ${totalShares.toFixed(4)}<br>
+          <strong>Общо инвестирана сума:</strong> ${totalCost.toFixed(2)}<br>
+          <strong>Средна цена на акция:</strong> ${averagePrice.toFixed(4)}
+        `;
+        resultBox.hidden = false;
+      });
+
+      createRow();
+    </script>
+  </body>
+</html>
